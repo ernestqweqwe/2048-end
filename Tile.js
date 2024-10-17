@@ -1,34 +1,23 @@
-export default class Tile {
-    #x;
-    #tileElement;
-    #y;
-    #value;
-    constructor(tileContainer, value = Math.random() > 0.5 ? 2 : 4) {
-        this.#tileElement = document.createElement('div');
-        this.#tileElement.classList.add('tile');
-        tileContainer.append(this.#tileElement);
+export class Tile {
+    constructor(gridElement) {
+        this.tileElement = document.createElement('div');
+        this.tileElement.classList.add('tile');
+        this.setValue(Math.random() > 0.5 ? 2 : 4);
+        gridElement.append(this.tileElement);
+    }
+
+    setXY(x, y) {
+        this.tileElement.style.setProperty('--x', x);
+        this.tileElement.style.setProperty('--y', y);
+        this.x = x;
+        this.y = y;
+    }
+
+    setValue(value) {
         this.value = value;
-    }
-
-    set value(v) {
-        this.#value = v;
-        this.#tileElement.textContent = v;
-        const power = Math.log2(v);
-        const backgroundLightness = 100 - power * 9;
-        this.#tileElement.style.setProperty('--background-lightness', `${backgroundLightness}%`);
-        this.#tileElement.style.setProperty(
-            '--text-lightness',
-            `${backgroundLightness <= 50 ? 90 : 10}%`,
-        );
-    }
-
-    set x(value) {
-        this.#x = value;
-        this.#tileElement.style.setProperty('--x', value);
-    }
-
-    set y(value) {
-        this.#y = value;
-        this.#tileElement.style.setProperty('--y', value);
+        this.tileElement.textContent = this.value;
+        const bgLightness = 100 - Math.log2(this.value) * 9;
+        this.tileElement.style.setProperty('--bg-lightness', `${bgLightness}%`);
+        this.tileElement.style.setProperty('--text-lightness', `${bgLightness <= 50 ? 90 : 10}%`);
     }
 }

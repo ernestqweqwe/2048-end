@@ -1,63 +1,40 @@
-import Grid from './Grid.js';
-import Tile from './Tile.js';
+import { Grid } from './Grid.js';
+import { Tile } from './Tile.js';
 
 const gameBoard = document.getElementById('game-board');
 
 const grid = new Grid(gameBoard);
-grid.randomEmptyCell().tile = new Tile(gameBoard);
-grid.randomEmptyCell().tile = new Tile(gameBoard);
 
-function setupInput() {
-    window.addEventListener('keydown', handleInput, { once: true });
+grid.getRandomEmptyCell().linkTile(new Tile(gameBoard));
+grid.getRandomEmptyCell().linkTile(new Tile(gameBoard));
+setupInputOnce();
+
+function setupInputOnce() {
+    window.addEventListener('keydown', handleInputOnce, { once: true });
 }
 
-function handleInput(e) {
-    switch (e.key) {
+function handleInputOnce(event) {
+    switch (event.key) {
         case 'ArrowUp':
-            moveUp();
+            grid.moveUp();
             break;
         case 'ArrowDown':
-            moveDown();
+            grid.moveDown();
             break;
-
         case 'ArrowLeft':
-            moveLeft();
+            grid.moveLeft();
             break;
         case 'ArrowRight':
-            moveRight();
+            grid.moveRight();
             break;
         default:
-            setupInput();
+            setupInputOnce();
             return;
     }
-    setupInput();
+
+    setupInputOnce();
 }
 
 function moveUp() {
-    slideTiles(grid.cellsByColumn);
-    console.log(grid.cellsByColumn);
-}
-
-function slideTiles(cells) {
-    cells.forEach((group) => {
-        for (let i = 1; i < group.length; i++) {
-            const cell = group[i];
-            if ((cell.tile = null)) continue;
-            let lastValidCell;
-            for (let j = i - 1; j >= 0; j--) {
-                const moveToCell = group[j];
-                if (!moveToCell.canAccept(cell.tile)) break;
-                lastValidCell = moveToCell;
-            }
-
-            if (lastValidCell != null) {
-                if (lastValidCell.tile !== null) {
-                    lastValidCell.mergeTile = cell.tile;
-                } else {
-                    lastValidCell.tile = cell.tile;
-                }
-                cell.tile = null;
-            }
-        }
-    });
+    slideTiles(grid.cellsGroupedByColumn);
 }

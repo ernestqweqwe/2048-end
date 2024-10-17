@@ -35,6 +35,10 @@ body {
 }
 
 .tile {
+    --x: 0;
+    --x: 0;
+    top: calc(var(--y) * (var(--cell-size) + var(--cell-gap)) + var(--cell-gap));
+    left: calc(var(--x) * (var(--cell-size) + var(--cell-gap)) + var(--cell-gap));
     position: absolute;
     display: flex;
     justify-content: center;
@@ -42,11 +46,9 @@ body {
     width: var(--cell-size);
     height: var(--cell-size);
     border-radius: 1vmin;
-    top: calc(var(--y) * (var(--cell-size) + var(--cell-gap)) + var(--cell-gap));
-    left: calc(var(--x) * (var(--cell-size) + var(--cell-gap)) + var(--cell-gap));
     font-weight: bold;
-    background-color: hsl(200, 50%, var(--background-lightness));
-    color: hsl(200, 25%, var(--text-lightness));
+    background-color: hsl(25, 60%, var(--bg-lightness));
+    color: hsl(25, 40%, var(--text-lightness));
     animation: show 200ms ease-in-out;
     transition: 100ms ease-in-out;
 }
