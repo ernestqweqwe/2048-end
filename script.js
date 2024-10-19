@@ -13,19 +13,35 @@ function setupInputOnce() {
     window.addEventListener('keydown', handleInputOnce, { once: true });
 }
 
-function handleInputOnce(event) {
+async function handleInputOnce(event) {
     switch (event.key) {
         case 'ArrowUp':
-            moveUp();
+            if (!canMoveUp()) {
+                setupInputOnce();
+                return;
+            }
+            await moveUp();
             break;
         case 'ArrowDown':
-            moveDown();
+            if (!canMoveDown()) {
+                setupInputOnce();
+                return;
+            }
+            await moveDown();
             break;
         case 'ArrowLeft':
-            moveLeft();
+            if (!canMoveLeft()) {
+                setupInputOnce();
+                return;
+            }
+            await moveLeft();
             break;
         case 'ArrowRight':
-            moveRight();
+            if (!canMoveRight()) {
+                setupInputOnce();
+                return;
+            }
+            await moveRight();
             break;
         default:
             setupInputOnce();
@@ -36,34 +52,42 @@ function handleInputOnce(event) {
 
     grid.getRandomEmptyCell().linkTile(newTile);
 
+    if (!canMoveUp() && !canMoveDown() && !canMoveLeft() && !canMoveRight()) {
+        await newTile.waitForAnimationEnd();
+        alert('Game Over!');
+    }
+
     setupInputOnce();
 }
 
-function moveUp() {
-    slideTiles(grid.cellsGroupedByColumn); // в методе групперуем ячейки по столбцам(двумерный массив)
+async function moveUp() {
+    await slideTiles(grid.cellsGroupedByColumn); // в методе групперуем ячейки по столбцам(двумерный массив)
 }
 
-function moveDown() {
-    slideTiles(grid.cellsGroupedByReversedColumn);
+async function moveDown() {
+    await slideTiles(grid.cellsGroupedByReversedColumn);
 }
 
-function moveLeft() {
-    slideTiles(grid.cellsGroupedByRow);
+async function moveLeft() {
+    await slideTiles(grid.cellsGroupedByRow);
 }
 
-function moveRight() {
-    slideTiles(grid.cellsGroupedByReversedRow);
+async function moveRight() {
+    await slideTiles(grid.cellsGroupedByReversedRow);
 }
 
-function slideTiles(groupedCells) {
-    groupedCells.forEach((group) => slideTailsInGroup(group)); // вызываем функцию для каждого столбца ячейки
+async function slideTiles(groupedCells) {
+    const promises = [];
+    groupedCells.forEach((group) => slideTailsInGroup(group, promises)); // вызываем функцию для каждого столбца ячейки
+
+    await Promise.all(promises);
 
     grid.cells.forEach((cell) => {
         cell.hasTileForMerge() && cell.mergeTiles();
     });
 }
 
-function slideTailsInGroup(group) {
+function slideTailsInGroup(group, promises) {
     for (let i = 1; i < group.length; i++) {
         if (group[i].isEmpty()) {
             continue;
@@ -84,6 +108,8 @@ function slideTailsInGroup(group) {
             continue;
         }
 
+        promises.push(cellWithTile.linkedTile.waitForTransitionEnd());
+
         if (targetCell.isEmpty()) {
             targetCell.linkTile(cellWithTile.linkedTile);
         } else {
@@ -92,4 +118,35 @@ function slideTailsInGroup(group) {
 
         cellWithTile.unlinkTile();
     }
+}
+
+function canMoveUp() {
+    return canMove(grid.cellsGroupedByColumn);
+}
+function canMoveDown() {
+    return canMove(grid.cellsGroupedByReversedColumn);
+}
+function canMoveLeft() {
+    return canMove(grid.cellsGroupedByRow);
+}
+function canMoveRight() {
+    return canMove(grid.cellsGroupedByReversedRow);
+}
+function canMove(groupedCells) {
+    return groupedCells.some((group) => canMoveInGroup(group));
+}
+
+function canMoveInGroup(group) {
+    return group.some((cell, index) => {
+        if (index === 0) {
+            return false;
+        }
+
+        if (cell.isEmpty()) {
+            return false;
+        }
+
+        const targetCell = group[index - 1];
+        return targetCell.canAccept(cell.linkedTile);
+    });
 }
